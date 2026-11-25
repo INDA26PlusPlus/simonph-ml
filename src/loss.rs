@@ -9,6 +9,6 @@ impl MSEloss{
             sum += diff*diff;
             ret[i] = diff*2.0;
         }
-        return (sum,ret);
+        return (sum/preds.len() as f64,ret);
     }
 }

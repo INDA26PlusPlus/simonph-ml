@@ -11,14 +11,12 @@ pub struct NeuronLayer{
 impl NeuronLayer{
     pub fn new(nr_in:usize, nr_out:usize) -> NeuronLayer{
         let mut rng = StdRng::seed_from_u64(42);
-        let mut bias = vec![0.0;nr_out];
-        for x in bias.iter_mut(){
-            *x = rng.random_range(-1.0..1.0);
-        }
+        let bias = vec![0.0;nr_out];
         let mut weights = vec![vec![0.0;nr_in];nr_out];
+        let limit = (6.0 / nr_in as f64).sqrt();
         for i in 0..weights.len(){
             for j in 0..weights[0].len(){
-                weights[i][j] = rng.random_range(-1.0..1.0);
+                weights[i][j] = rng.random_range(-limit..limit);
             }
         }
         return NeuronLayer {nr_in, nr_out, bias,weights};
