@@ -42,9 +42,9 @@ fn main(){
     } = MnistBuilder::new()
         .base_path("mnist")
        .label_format_one_hot()
-       .training_set_length(1000)
+       .training_set_length(50000)
        .validation_set_length(1_000)
-       .test_set_length(1_000)
+       .test_set_length(10000)
        .finalize();
     let train_data:Vec<Vec<f64>> = trn_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
     let train_labels:Vec<Vec<f64>> = trn_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect();
@@ -58,7 +58,7 @@ fn main(){
         Box::new(NeuronLayer::new(128,10))
     ]);
 
-    let nr_epochs = 10;
+    let nr_epochs = 3;
     println!("starting trainig");
     for epoch in 0..nr_epochs{
         let mut tot_loss = 0.0;
