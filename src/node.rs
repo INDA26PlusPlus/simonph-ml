@@ -1,4 +1,6 @@
 use rand::{RngExt, SeedableRng, rngs::StdRng};
+
+use crate::modelstep::ModelStep;
 pub struct NeuronLayer{
     nr_in:usize,
     nr_out:usize,
@@ -21,7 +23,7 @@ impl NeuronLayer{
         }
         return NeuronLayer {nr_in, nr_out, bias,weights};
     }
-    pub fn forward_pass(&self,input:&Vec<f64>)->Vec<f64>{
+    pub fn forward(&self,input:&Vec<f64>)->Vec<f64>{
         let mut output = vec![0.0;self.nr_out];
         for i in 0..self.nr_out{
             output[i] = self.bias[i];
@@ -47,5 +49,14 @@ impl NeuronLayer{
             self.bias[i] -= prev_deriv[i]*lr;
         }
         return next_deriv;
+    }
+}
+
+impl ModelStep for NeuronLayer{
+    fn forward(&self, input:&Vec<f64>)->Vec<f64>{
+        return self.forward(input);
+    }
+    fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64)->Vec<f64>{
+        return self.backprop(prev_deriv, last_value, lr);
     }
 }
