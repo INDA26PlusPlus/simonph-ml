@@ -5,7 +5,7 @@ mod model;
 mod loss;
 fn main() {
     let mut model = model::Model::new(vec![NeuronLayer::new(2, 1)]);
-    let nr_epoch = 20;
+    let nr_epoch = 50;
     let data: [(Vec<f64>, Vec<f64>); 4] = [(vec![0.0,0.0],vec![0.0]),(vec![1.0,0.0],vec![0.0]),(vec![0.0,1.0],vec![0.0]),(vec![1.0,1.0],vec![1.0])];
     for epoch in 0..nr_epoch{
         let mut tot_loss = 0.0;

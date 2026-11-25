@@ -1,3 +1,4 @@
+use rand::{RngExt, SeedableRng, rngs::StdRng};
 pub struct NeuronLayer{
     nr_in:usize,
     nr_out:usize,
@@ -7,7 +8,18 @@ pub struct NeuronLayer{
 
 impl NeuronLayer{
     pub fn new(nr_in:usize, nr_out:usize) -> NeuronLayer{
-        return NeuronLayer { nr_in, nr_out, bias: vec![0.0;nr_out], weights: vec![vec![0.0;nr_in];nr_out]};
+        let mut rng = StdRng::seed_from_u64(42);
+        let mut bias = vec![0.0;nr_out];
+        for x in bias.iter_mut(){
+            *x = rng.random_range(-1.0..1.0);
+        }
+        let mut weights = vec![vec![0.0;nr_in];nr_out];
+        for i in 0..weights.len(){
+            for j in 0..weights[0].len(){
+                weights[i][j] = rng.random_range(-1.0..1.0);
+            }
+        }
+        return NeuronLayer {nr_in, nr_out, bias,weights};
     }
     pub fn forward_pass(&self,input:&Vec<f64>)->Vec<f64>{
         let mut output = vec![0.0;self.nr_out];
