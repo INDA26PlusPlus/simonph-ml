@@ -24,23 +24,30 @@ impl NeuronLayer{
     pub fn forward(&self,input:&Vec<f64>)->Vec<f64>{
         let mut output = vec![0.0;self.nr_out];
         for i in 0..self.nr_out{
-            output[i] = self.bias[i];
-            for j in 0..self.nr_in{
-                output[i] += self.weights[i][j]*input[j];
-            }
+            output[i] = input.iter().zip(self.weights[i].iter()).fold(self.bias[i],
+                |s,(inp,w)| s.algebraic_add(inp.algebraic_mul(*w)));
         }
         return output;
     }
-    pub fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64)->Vec<f64>{
-        let mut next_deriv = vec![0.0;self.nr_in];
-        for i in 0..self.nr_in{
-            for j in 0..self.nr_out{
-                next_deriv[i] += self.weights[j][i]*prev_deriv[j];
+    pub fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64,last_layer:bool)->Vec<f64>{
+        let mut next_deriv:Vec<f64> = vec![0.0;self.nr_in];
+        if !last_layer{
+            for i in 0..self.nr_out{
+                if prev_deriv[i] == 0.0{
+                    continue;
+                }
+                for j in 0..self.nr_in{
+                    next_deriv[j] = next_deriv[j].algebraic_add(self.weights[i][j].algebraic_mul(prev_deriv[i]));
+                }
             }
         }
         for i in 0..self.nr_out{
-            for j in 0..self.nr_in{
-                self.weights[i][j] -= last_value[j]*prev_deriv[i]*lr;
+            if prev_deriv[i] == 0.0{
+                continue;
+            }
+            let s = prev_deriv[i]*lr;
+            for (w,v) in self.weights[i].iter_mut().zip(last_value.iter()){
+                *w -= v*s;
             }
         }
         for i in 0..self.nr_out{
@@ -54,7 +61,7 @@ impl ModelStep for NeuronLayer{
     fn forward(&self, input:&Vec<f64>)->Vec<f64>{
         return self.forward(input);
     }
-    fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64)->Vec<f64>{
-        return self.backprop(prev_deriv, last_value, lr);
+    fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64,last_layer:bool)->Vec<f64>{
+        return self.backprop(prev_deriv, last_value, lr,last_layer);
     }
 }

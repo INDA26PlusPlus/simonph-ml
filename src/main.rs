@@ -32,18 +32,35 @@ use mnist::*;
 //         println!("{:?}", model.forward(x.clone()));
 //     }
 // }
+fn validate(model:&mut model::Model, data:&Vec<Vec<f64>>, labels:&Vec<Vec<f64>>)->(i32,f64){
+    let mut nrcorrect = 0;
+    for i in 0..data.len(){
+        let preds = model.forward(data[i].clone());
+        let mut mx = 0;
+        for i in 1..preds.len(){
+            if preds[i] > preds[mx]{
+                mx = i;
+            }
+        }
+        if labels[i][mx] == 1.0{
+            nrcorrect += 1;
+        }
+    }
+    return (nrcorrect, nrcorrect as f64/data.len() as f64);
+}
 fn main(){
     let Mnist {
        trn_img,
        trn_lbl,
        tst_img,
        tst_lbl,
-       ..
+       val_img,
+       val_lbl
     } = MnistBuilder::new()
         .base_path("mnist")
        .label_format_one_hot()
        .training_set_length(50000)
-       .validation_set_length(1_000)
+       .validation_set_length(10000)
        .test_set_length(10000)
        .finalize();
     let train_data:Vec<Vec<f64>> = trn_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
@@ -52,13 +69,19 @@ fn main(){
     let test_data:Vec<Vec<f64>> = tst_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
     let test_labels:Vec<Vec<f64>> = tst_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect(); 
 
+    let val_data:Vec<Vec<f64>> = val_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
+    let val_labels:Vec<Vec<f64>> = val_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect(); 
+
     let mut model = model::Model::new(vec![
         Box::new(NeuronLayer::new(28*28, 128)), 
         Box::new(ReLu::new()),
         Box::new(NeuronLayer::new(128,10))
     ]);
-
-    let nr_epochs = 3;
+    let mut best_val = 0;
+    let patiense = 4;
+    let mut cur_failed = 0;
+    let nr_epochs = 30;
+    let mut lr = 0.01;
     println!("starting trainig");
     for epoch in 0..nr_epochs{
         let mut tot_loss = 0.0;
@@ -66,25 +89,26 @@ fn main(){
             let x = train_data[i].clone();
             let y = train_labels[i].clone();
             let preds = model.forward(x);
-            let (loss_sum,loss) = loss::MSEloss::get_loss(&preds, &y);
-            model.backward(loss, 0.001);
+            let (loss_sum,loss) = loss::CrossEntropyLoss::get_loss(&preds, &y);
+            model.backward(loss, lr);
             tot_loss += loss_sum;
         }
-        println!("Epoch: {epoch}, loss={}",tot_loss/train_data.len() as f64);
-    }
-    println!("training done");
-    let mut nrcorrect = 0;
-    for i in 0..test_data.len(){
-        let preds = model.forward(test_data[i].clone());
-        let mut mx = 0;
-        for i in 1..preds.len(){
-            if preds[i] > preds[mx]{
-                mx = i;
+        let (val_correct, val_accuracy) = validate(&mut model, &val_data, &val_labels);
+        
+        println!("Epoch: {epoch}, loss={} val_accuracy: {val_accuracy}",tot_loss/train_data.len() as f64);
+        if val_correct >= best_val{
+            best_val = val_correct;
+        }
+        else{
+            cur_failed += 1;
+            if cur_failed >= patiense{
+                println!("stopping early");
+                break;
             }
         }
-        if test_labels[i][mx] == 1.0{
-            nrcorrect += 1;
-        }
+        lr *= 0.9;
     }
-    println!("nrcorrect: {nrcorrect}, accuracy: {}", nrcorrect as f64 / test_data.len() as f64);
+    println!("training done");
+    let (nrcorrect, accuracy) = validate(&mut model, &test_data, &test_labels);
+    println!("nrcorrect: {nrcorrect}, accuracy: {}", accuracy);
 }

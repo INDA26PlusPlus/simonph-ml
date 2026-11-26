@@ -1,5 +1,4 @@
 use super::modelstep::ModelStep;
-
 pub struct Model{
     pub layers:Vec<Box<dyn ModelStep>>,
     pub last_output:Vec<Vec<f64>>
@@ -19,7 +18,7 @@ impl Model{
     }
     pub fn backward(&mut self, mut loss:Vec<f64>,lr:f64){
         for i in (0..self.layers.len()).rev(){
-            loss = self.layers[i].backprop(&loss, &self.last_output[i], lr)
+            loss = self.layers[i].backprop(&loss, &self.last_output[i], lr,i==0)
         }
     }
 }

@@ -33,7 +33,7 @@ impl ModelStep for ReLu{
     fn forward(&self, input:&Vec<f64>)->Vec<f64>{
         return self.forward(input);
     }
-    fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64)->Vec<f64>{
+    fn backprop(&mut self, prev_deriv:&Vec<f64>, last_value:&Vec<f64>,lr:f64,_:bool)->Vec<f64>{
         return self.backprop(prev_deriv, last_value, lr);
     }
 }
