@@ -1,5 +1,4 @@
 use rand::{RngExt, SeedableRng, rngs::StdRng};
-
 use crate::modelstep::ModelStep;
 pub struct NeuronLayer{
     nr_in:usize,
