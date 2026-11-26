@@ -15,8 +15,8 @@ use mnist::*;
 //         Box::new(NeuronLayer::new(4,1))
 //     ]);
 //     let nr_epoch = 500;
-//     //let and_data: [(Vec<f64>, Vec<f64>); 4] = [(vec![0.0,0.0],vec![0.0]),(vec![1.0,0.0],vec![0.0]),(vec![0.0,1.0],vec![0.0]),(vec![1.0,1.0],vec![1.0])];
-//     let xor_data: [(Vec<f64>, Vec<f64>); 4] = [(vec![0.0,0.0],vec![0.0]),(vec![1.0,0.0],vec![1.0]),(vec![0.0,1.0],vec![1.0]),(vec![1.0,1.0],vec![0.0])];
+//     //let and_data: [(Vec<f32>, Vec<f32>); 4] = [(vec![0.0,0.0],vec![0.0]),(vec![1.0,0.0],vec![0.0]),(vec![0.0,1.0],vec![0.0]),(vec![1.0,1.0],vec![1.0])];
+//     let xor_data: [(Vec<f32>, Vec<f32>); 4] = [(vec![0.0,0.0],vec![0.0]),(vec![1.0,0.0],vec![1.0]),(vec![0.0,1.0],vec![1.0]),(vec![1.0,1.0],vec![0.0])];
 //     for epoch in 0..nr_epoch{
 //         let mut tot_loss = 0.0;
 //         for (x,y) in xor_data.iter(){
@@ -32,7 +32,7 @@ use mnist::*;
 //         println!("{:?}", model.forward(x.clone()));
 //     }
 // }
-fn validate(model:&mut model::Model, data:&Vec<Vec<f64>>, labels:&Vec<Vec<f64>>)->(i32,f64){
+fn validate(model:&mut model::Model, data:&Vec<Vec<f32>>, labels:&Vec<Vec<f32>>)->(i32,f32){
     let mut nrcorrect = 0;
     for i in 0..data.len(){
         let preds = model.forward(data[i].clone());
@@ -46,7 +46,7 @@ fn validate(model:&mut model::Model, data:&Vec<Vec<f64>>, labels:&Vec<Vec<f64>>)
             nrcorrect += 1;
         }
     }
-    return (nrcorrect, nrcorrect as f64/data.len() as f64);
+    return (nrcorrect, nrcorrect as f32/data.len() as f32);
 }
 fn main(){
     let Mnist {
@@ -63,14 +63,14 @@ fn main(){
        .validation_set_length(10000)
        .test_set_length(10000)
        .finalize();
-    let train_data:Vec<Vec<f64>> = trn_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
-    let train_labels:Vec<Vec<f64>> = trn_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect();
+    let train_data:Vec<Vec<f32>> = trn_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f32/255.0).collect()).collect();
+    let train_labels:Vec<Vec<f32>> = trn_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f32).collect()).collect();
 
-    let test_data:Vec<Vec<f64>> = tst_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
-    let test_labels:Vec<Vec<f64>> = tst_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect(); 
+    let test_data:Vec<Vec<f32>> = tst_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f32/255.0).collect()).collect();
+    let test_labels:Vec<Vec<f32>> = tst_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f32).collect()).collect(); 
 
-    let val_data:Vec<Vec<f64>> = val_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f64/255.0).collect()).collect();
-    let val_labels:Vec<Vec<f64>> = val_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f64).collect()).collect(); 
+    let val_data:Vec<Vec<f32>> = val_img.chunks(28*28).map(|img| img.iter().map(|x| *x as f32/255.0).collect()).collect();
+    let val_labels:Vec<Vec<f32>> = val_lbl.chunks(10).map(|img| img.iter().map(|x| *x as f32).collect()).collect(); 
 
     let mut model = model::Model::new(vec![
         Box::new(NeuronLayer::new(28*28, 128)), 
@@ -95,7 +95,7 @@ fn main(){
         }
         let (val_correct, val_accuracy) = validate(&mut model, &val_data, &val_labels);
         
-        println!("Epoch: {epoch}, loss={} val_accuracy: {val_accuracy}",tot_loss/train_data.len() as f64);
+        println!("Epoch: {epoch}, loss={} val_accuracy: {val_accuracy}",tot_loss/train_data.len() as f32);
         if val_correct >= best_val{
             best_val = val_correct;
         }
